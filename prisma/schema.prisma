@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+ 
+}
+
+model TravelLog {
+  id          String   @id @default(cuid())
+  userId      String
+  fromLocation String
+  toLocation   String
+  startTime    DateTime
+  endTime      DateTime
+  transport    String   // bus, train, flight, car
+  cost         Float    // Travel/transport cost in INR
+  expense      Float    @default(0) // Additional expenses (food, shopping, etc.) in INR
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([startTime])
+}
+
+model RouteTemplate {
+  id          String      @id @default(cuid())
+  userId      String
+  name        String      // e.g., "Home to Office", "Office to Home"
+  fromLocation String
+  toLocation   String
+  transport   String      @default("train")
+  estimatedCost Float     @default(0)  // Travel cost in INR
+  estimatedExpense Float  @default(0)  // Additional expenses in INR
+  stops       RouteStop[]
+  quickLogs   QuickLog[]
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model RouteStop {
+  id          String        @id @default(cuid())
+  templateId  String
+  template    RouteTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  name        String        // e.g., "Left Home", "Got Rickshaw", "Reached Station"
+  order       Int           // Sequence order
+  createdAt   DateTime      @default(now())
+
+  @@index([templateId])
+}
+
+model QuickLog {
+  id          String        @id @default(cuid())
+  userId      String
+  templateId  String
+  template    RouteTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  date        DateTime      @default(now())
+  stops       Json          // Array of {stopName, timestamp}
+  isCompleted Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([date])
+}
+
+model TransportType {
+  id   String @id @default(cuid())
+  name String @unique
+}

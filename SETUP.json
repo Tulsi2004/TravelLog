@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "setup": "npm install && npx prisma generate && npx prisma db push",
+    "dev": "npm run dev",
+    "start-dev": "next dev"
+  }
+}
